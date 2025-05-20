@@ -6,7 +6,7 @@ const personas = [
 
 //.find() buscar persona con nombre Luis
 const personaLuis = personas.find(persona => persona.nombre === "Luis");
-console.log("Persona encontrada:", personaLuis);
+console.log("La persona encontrada es:", personaLuis);
 
 //.forEach() imprimir nombre y edad de cada persona
 personas.forEach(persona => {
