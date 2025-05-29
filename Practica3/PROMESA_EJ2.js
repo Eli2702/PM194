@@ -10,7 +10,7 @@ function verificarUsuario(usuario) {
 }
 
 // Prueba con "admin"
-verificarUsuario("admin")
+verificarUsuario("Alma")
   .then(res => console.log(res))    // Acceso concedido
   .catch(err => console.error(err));
 
