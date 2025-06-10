@@ -1,15 +1,31 @@
-import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View } from 'react-native';
+//ZONA 1----Importaciones
 
+import { StatusBar } from 'expo-status-bar';
+import { StyleSheet, Text, View, Button} from 'react-native';
+
+const Texto=(props) => {
+  const {contenido}=props
+  return(
+  <Text>{contenido}</Text>
+  )
+};
+
+
+//ZONA 2----Main(Ejecucion)
 export default function App() {
   return (
     <View style={styles.container}>
-      <Text>Open up App.js to start working on your app!</Text>
-      <StatusBar style="auto" />
+      <Button title="Tlajaba!!"></Button>
+      <Texto contenido= "Hola"></Texto>
+      <Texto contenido= "mundo"></Texto>
+      <Texto contenido= "React Native"></Texto>
+      <StatusBar style="auto" />  
     </View>
   );
 }
 
+
+//ZONA 3----Estilos, estetica del screen
 const styles = StyleSheet.create({
   container: {
     flex: 1,
