@@ -1,60 +1,48 @@
-import React, { useEffect, useState } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
-import { ImageBackground } from 'react-native';
-import * as SplashScreen from 'expo-splash-screen';
+/* Zona 1 : Importaciones */
+import { StatusBar } from 'expo-status-bar';
+import { Button, StyleSheet, Text, View, Switch} from 'react-native';
+import React, { useState } from 'react';
 
-// 1. Configuramos el SplashScreen
-SplashScreen.preventAutoHideAsync();
-
-export default function App() {
-  const [appReady, setAppReady] = useState(false);
-
-  // 2. Simulamos carga de recursos
-  useEffect(() => {
-    setTimeout(async () => {
-      setAppReady(true);
-      await SplashScreen.hideAsync();
-    }, 2000); // 2 segundos de splash
-  }, []);
-
-  // 3. Contenido principal con ImageBackground
+const Texto = ({style}) => {
+  const [contenido, setContenido] = useState('Hola Mundo RNative');
+  const actualizartexto = () => {setContenido('Estado actualizado del text')};
   return (
-    <ImageBackground 
-      source={require('./assets/upq.jpg')} 
-      style={styles.background}
-      resizeMode="cover"
-    >
-      <View style={styles.container}>
-        <Text style={styles.title}>Mi App</Text>
-        <Text style={styles.subtitle}>
-          {appReady ? '¡Carga completa!' : 'Cargando...'}
-        </Text>
-      </View>
-    </ImageBackground>
+    <View Style={{margin: 10}}>
+     <Text Style={[style.text, style]}>{contenido}</Text>
+     <Button title='actualizartexto' onPress={actualizartexto}color="purple" />
+     </View>
   );
 }
 
-// 4. Estilos simples
+const[isEnabled, setIsEnabled] = useState(false);
+const toggleSwitch = () => setIsEnabled(previousState => !previousState);
+
+/* Zona 2 : Main */
+export default function App() {
+  return (
+    <View style={styles.container}>
+      <Texto style={styles.red} />
+      <Texto style={styles.green} />
+      <Texto style={styles.yellow} />
+      <StatusBar style="auto" />
+    </View>
+  );
+}
+
+/* Zona 3 : Estilos */
 const styles = StyleSheet.create({
-  background: {
-    flex: 1,
-    width: '100%',
-    height: '100%',
-  },
   container: {
     flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.5)', // overlay semitransparente
-    justifyContent: 'center',
+    backgroundColor: '#87CEEB',
     alignItems: 'center',
+    justifyContent: 'center',
+    flexDirection: 'row',
   },
-  title: {
-    color: 'white',
-    fontSize: 32,
-    fontWeight: 'bold',
-    marginBottom: 10,
+  text:{
+    color:'black',
+    fontSize:27,
   },
-  subtitle: {
-    color: 'white',
-    fontSize: 18,
-  }
+  red:{backgroundColor:'red'},
+  green:{backgroundColor:'green'},
+  yellow:{backgroundColor:'yellow'},
 });
