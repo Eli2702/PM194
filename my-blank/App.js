@@ -1,52 +1,60 @@
-/* Zona 1 : Importaciones */
-import { StatusBar } from 'expo-status-bar';
-import { Button, StyleSheet, Text, View, Switch} from 'react-native';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import { StyleSheet, Text, View } from 'react-native';
+import { ImageBackground } from 'react-native';
+import * as SplashScreen from 'expo-splash-screen';
 
-const Interruptor= () => {
-  const[isEnabled, setIsEnabled] = useState(false);
-  const toggleSwitch = () => setIsEnabled(previousState => !previousState);
+// 1. Configuramos el SplashScreen
+SplashScreen.preventAutoHideAsync();
 
-  return(
-    <View style={styles.container}>
-      <Text>
-        {isEnabled ? 'Activado': 'Desactivado'}
-      </Text>
-      <Switch
-        trackColor={{ false: "#767577", true: "#81b0ff" }}
-        thumbColor={isEnabled ? "#f5dd4b" : "#f4f3f4"}
-        onValueChange={toggleSwitch}
-        value={isEnabled}
-        />
-    </View>
-  )
-
-}
-
-
-/* Zona 2 : Main */
 export default function App() {
+  const [appReady, setAppReady] = useState(false);
+
+  // 2. Simulamos carga de recursos
+  useEffect(() => {
+    setTimeout(async () => {
+      setAppReady(true);
+      await SplashScreen.hideAsync();
+    }, 2000); // 2 segundos de splash
+  }, []);
+
+  // 3. Contenido principal con ImageBackground
   return (
-    <View style={styles.container}>
-    <Interruptor />
-    </View>
+    <ImageBackground 
+      source={require('./assets/upq.jpg')} 
+      style={styles.background}
+      resizeMode="cover"
+    >
+      <View style={styles.container}>
+        <Text style={styles.title}>Mi App</Text>
+        <Text style={styles.subtitle}>
+          {appReady ? '¡Carga completa!' : 'Cargando...'}
+        </Text>
+      </View>
+    </ImageBackground>
   );
 }
 
-/* Zona 3 : Estilos */
+// 4. Estilos simples
 const styles = StyleSheet.create({
+  background: {
+    flex: 1,
+    width: '100%',
+    height: '100%',
+  },
   container: {
     flex: 1,
-    backgroundColor: '#87CEEB',
-    alignItems: 'center',
+    backgroundColor: 'rgba(0,0,0,0.5)', // overlay semitransparente
     justifyContent: 'center',
-    flexDirection: 'row',
+    alignItems: 'center',
   },
-  text:{
-    color:'black',
-    fontSize:27,
+  title: {
+    color: 'white',
+    fontSize: 32,
+    fontWeight: 'bold',
+    marginBottom: 10,
   },
-  red:{backgroundColor:'red'},
-  green:{backgroundColor:'green'},
-  yellow:{backgroundColor:'yellow'},
+  subtitle: {
+    color: 'white',
+    fontSize: 18,
+  }
 });
