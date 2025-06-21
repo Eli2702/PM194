@@ -1,60 +1,98 @@
-import React, { useEffect, useState } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
-import { ImageBackground } from 'react-native';
-import * as SplashScreen from 'expo-splash-screen';
+/* Zona 1: Importaciones*/
+import React, { useState } from 'react';
+import { StyleSheet, Text, View, Button, TextInput, Alert, ScrollView } from 'react-native';
 
-// 1. Configuramos el SplashScreen
-SplashScreen.preventAutoHideAsync();
+/* Zona 2: main */
+export default function App(){
+  const [name, setName] = useState('');
+  const [password, setPassword] = useState('');
+  const [comments, setComments] = useState('');
+  const [age, setAge] = useState('');
 
-export default function App() {
-  const [appReady, setAppReady] = useState(false);
+  const showAlert = () => {
+    if (nombre.trim() === '' || password.trim() === '' || age.trim() === '' || comments.trim() === '') {
+    window.alert('Por favor, completa todos los campos requeridos');
+    }else{
+      window.alert(
+        `Nombre: ${name}\nContraseña: ${password}\nEdad: ${age}\nComentarios: ${comments}`
+      );
+    }
+  };
 
-  // 2. Simulamos carga de recursos
-  useEffect(() => {
-    setTimeout(async () => {
-      setAppReady(true);
-      await SplashScreen.hideAsync();
-    }, 2000); // 2 segundos de splash
-  }, []);
-
-  // 3. Contenido principal con ImageBackground
   return (
-    <ImageBackground 
-      source={require('./assets/upq.jpg')} 
-      style={styles.background}
-      resizeMode="cover"
-    >
-      <View style={styles.container}>
-        <Text style={styles.title}>Mi App</Text>
-        <Text style={styles.subtitle}>
-          {appReady ? '¡Carga completa!' : 'Cargando...'}
-        </Text>
-      </View>
-    </ImageBackground>
+    <ScrollView style={styles.container}>
+      <Text style={styles.title}>Nombre (normal)</Text>
+      <TextInput
+        style={styles.input}
+        placeholder="Escribe tu nombre"
+        value={name}
+        onChangeText={setName}
+      />
+
+      <Text style={styles.title}>Contraseña (oculta)</Text>
+      <TextInput
+        style={styles.input}
+        placeholder="Escribe tu contraseña"
+        value={password}
+        onChangeText={setPassword}
+        secureTextEntry={true}
+      />
+
+      <Text style={styles.title}>Edad (numérico)</Text>
+      <TextInput
+        style={styles.input}
+        placeholder="Escribe tu edad"
+        value={age}
+        onChangeText={setAge}
+        keyboardType="numeric"
+      />
+
+      <Text style={styles.title}>Comentarios (multilínea)</Text>
+      <TextInput
+        style={[styles.input, { height: 100, textAlignVertical: 'top' }]}
+        placeholder="Escribe tus comentarios"
+        value={comments}
+        onChangeText={setComments}
+        multiline={true}
+        numberOfLines={4}
+      />
+
+      <Text style={styles.title}>Campo solo lectura</Text>
+      <TextInput
+        style={styles.input}
+        value="Este campo no se puede editar"
+        editable={false}
+      />
+
+      <Button title="Mostrar alerta" onPress={showAlert}></Button>
+    </ScrollView>
   );
 }
 
-// 4. Estilos simples
 const styles = StyleSheet.create({
-  background: {
-    flex: 1,
-    width: '100%',
-    height: '100%',
-  },
   container: {
-    flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.5)', // overlay semitransparente
-    justifyContent: 'center',
-    alignItems: 'center',
+    flexGrow: 1,
+    backgroundColor: '#f0f0f0',
+    padding: 20,
   },
   title: {
-    color: 'white',
-    fontSize: 32,
-    fontWeight: 'bold',
-    marginBottom: 10,
+    fontSize: 17,
+    color: '#333',
+    marginBottom: 6,
+    alignSelf: 'flex-start',
   },
-  subtitle: {
-    color: 'white',
-    fontSize: 18,
-  }
+  input: {
+    height: 40,
+    borderColor: '#bbb',
+    borderWidth: 1,
+    paddingHorizontal: 10,
+    marginBottom: 15,
+    borderRadius: 8,
+    backgroundColor: '#fff',
+    width: '100%',
+    fontSize: 15,
+  },
 });
+
+
+
