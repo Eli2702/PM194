@@ -1,122 +1,57 @@
-import React, {useEffect,useState} from 'react';
-import { StyleSheet, View, Text, ScrollView } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { StyleSheet, Text, View, ScrollView, ActivityIndicator, Button } from 'react-native';
+import { ImageBackground } from 'react-native';
 
 export default function App(){
-  return(
-    <ScrollView 
-    contentContainerStyle={styles.background} 
-    showsVerticalScrollIndicator={false}
-    horizontal={true}>
-     <Text>Hola Mundo</Text> 
-      <Text>Hola Mundo</Text>
-      <Text>Hola Mundo</Text>
-      <Text>Hola Mundo</Text>
-      <Text>Hola Mundo</Text>
-      <Text>Hola Mundo</Text>
-      <Text>Hola Mundo</Text>
-      <Text>Hola Mundo</Text>
-      <Text>Hola Mundo</Text>
-      <Text>Hola Mundo</Text>
-      <Text>Hola Mundo</Text>
-      <Text>Hola Mundo</Text>
-      <Text>Hola Mundo</Text>
-      <Text>Hola Mundo</Text>
-      <Text>Hola Mundo</Text>
-      <Text>Hola Mundo</Text>
-      <Text>Hola Mundo</Text>
-      <Text>Hola Mundo</Text>
-      <Text>Hola Mundo</Text>
-      <Text>Hola Mundo</Text>
-      <Text>Hola Mundo</Text>
-      <Text>Hola Mundo</Text>
-      <Text>Hola Mundo</Text>
-      <Text>Hola Mundo</Text>
-      <Text>Hola Mundo</Text>
-      <Text>Hola Mundo</Text>
-      <Text>Hola Mundo</Text>
-      <Text>Hola Mundo</Text>
-      <Text>Hola Mundo</Text>
-      <Text>Hola Mundo</Text>
-      <Text>Hola Mundo</Text>
-      <Text>Hola Mundo</Text>
-      <Text>Hola Mundo</Text>
-      <Text>Hola Mundo</Text>
-      <Text>Hola Mundo</Text>
-      <Text>Hola Mundo</Text>
-      <Text>Hola Mundo</Text>
-      <Text>Hola Mundo</Text>
-      <Text>Hola Mundo</Text>
-      <Text>Hola Mundo</Text>
-      <Text>Hola Mundo</Text>
-      <Text>Hola Mundo</Text>
-      <Text>Hola Mundo</Text>
-      <Text>Hola Mundo</Text>
-      <Text>Hola Mundo</Text>
-      <Text>Hola Mundo</Text>
-      <Text>Hola Mundo</Text>
-      <Text>Hola Mundo</Text>
-      <Text>Hola Mundo</Text>
-      <Text>Hola Mundo</Text>
-      <Text>Hola Mundo</Text>
-      <Text>Hola Mundo</Text>
-      <Text>Hola Mundo</Text>
-      <Text>Hola Mundo</Text>
-      <Text>Hola Mundo</Text>
-      <Text>Hola Mundo</Text>
-      <Text>Hola Mundo</Text>
-      <Text>Hola Mundo</Text>
-      <Text>Hola Mundo</Text>
-      <Text>Hola Mundo</Text>
-      <Text>Hola Mundo</Text>
-      <Text>Hola Mundo</Text>
-      <Text>Hola Mundo</Text>
-      <Text>Hola Mundo</Text>
-      <Text>Hola Mundo</Text>
-      <Text>Hola Mundo</Text>
-      <Text>Hola Mundo</Text>
-      <Text>Hola Mundo</Text>
-      <Text>Hola Mundo</Text>
-      <Text>Hola Mundo</Text>
-      <Text>Hola Mundo</Text>
-      <Text>Hola Mundo</Text>
-      <Text>Hola Mundo</Text>
-      <Text>Hola Mundo</Text>
-      <Text>Hola Mundo</Text>
-      <Text>Hola Mundo</Text>
-      <Text>Hola Mundo</Text>
-      <Text>Hola Mundo</Text>
-      <Text>Hola Mundo</Text>
-      <Text>Hola Mundo</Text>
-      <Text>Hola Mundo</Text>
-      <Text>Hola Mundo</Text>
-      <Text>Hola Mundo</Text>
-    </ScrollView>
-  )
+const [loading, setLoading] = useState(false);
+const [mensaje, setMensaje] = useState('');
+
+const simularCarga = () => {
+  setLoading(true);
+  setMensaje('');
+  setTimeout(() => {
+    setLoading(false);
+    setMensaje('Carga realizada con éxito');
+
+  }, 2000);
+}
+return(
+  <View style={styles.container}>
+    <Text style={styles.texto}>
+      Carga
+    </Text>
+    {loading ?(
+      <>
+      <ActivityIndicator size={"large"} color={"#2D9CDB"} />
+      <Text style={styles.texto}>Cargando.....</Text>
+      </>
+    ):(
+      <>
+      <Button title="Iniciar carga" onPress={simularCarga} />
+      {mensaje !== '' && <Text style={styles.exito}>{mensaje}</Text>}
+      </>
+    )}
+  </View>
+)
+
 }
 
-const styles = StyleSheet.create({ 
-background: { 
-flex: 1, 
-width: '100%', 
-height: '100%', 
-justifyContent: 'center',
-alignItems: 'center',
-}, 
-container: { 
-flex: 1, 
-backgroundColor: 'rgba(0,0,0,0.5)', 
-justifyContent: 'center', 
-alignItems: 'center', 
-}, 
-title: { 
-color: 'white', 
-fontSize: 32, 
-fontWeight: 'bold', 
-marginBottom: 10, 
-}, 
-subtitle:
-{
-  color: 'white', 
-fontSize: 18,
-}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.5)', // overlay semitransparente
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  texto: {
+    color: 'white',
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 10,
+  },
+  exito: {
+    color: 'white',
+    fontSize: 18,
+  }
 });
