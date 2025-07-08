@@ -1,140 +1,342 @@
 import React, { useEffect, useState } from 'react';
-import { StyleSheet, Text, View, Button, TextInput, Alert, ScrollView, Switch, ImageBackground } from 'react-native';
-import * as SplashScreen from 'expo-splash-screen';
+import {
+  View,
+  Text,
+  StyleSheet,
+  ActivityIndicator,
+  SectionList,
+  Image,
+  Alert,
+  SafeAreaView,
+  Modal,
+  Pressable,
+  FlatList,
+  TouchableOpacity,
+  ScrollView,
+} from 'react-native';
 
-// Componente Interruptor
-const Interruptor = ({ acepta, setAcepta }) => {
-  const toggleSwitch = () => setAcepta(prev => !prev);
-
-  return (
-    <View style={styles.switchContainer}>
-      <Switch
-        trackColor={{ false: "#767577", true: "#81b0ff" }}
-        thumbColor={acepta ? "#f5dd4b" : "#f4f3f4"}
-        onValueChange={toggleSwitch}
-        value={acepta}
-      />
-      <Text style={styles.terminosText}>
-        {acepta ? 'Aceptaste los términos y condiciones' : 'Debes aceptar los términos'}
-      </Text>
-    </View>
-  );
+const CATEGORIES = {
+  fiction: 'Ficción',
+  history: 'Historia',
+  technology: 'Tecnología',
+  art: 'Arte',
+  science: 'Ciencia',
+  biography: 'Biografía',
+  travel: 'Viajes',
+  religion: 'Religión',
+  poetry: 'Poesía',
+  cooking: 'Cocina',
 };
 
-// Componente principal
 export default function App() {
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
-  const [aceptaTerminos, setAceptaTerminos] = useState(false);
-  const [appReady, setAppReady] = useState(false);
+  const [category, setCategory] = useState('fiction');
+  const [groupedBooks, setGroupedBooks] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [errorMsg, setErrorMsg] = useState(null);
+  const [modalVisible, setModalVisible] = useState(false);
+  const [selectedBook, setSelectedBook] = useState(null);
+  const [categoryModalVisible, setCategoryModalVisible] = useState(false);
 
-  useEffect(() => {
-    const prepararApp = async () => {
-      try {
-        await SplashScreen.preventAutoHideAsync();
-        setTimeout(async () => {
-          setAppReady(true);
-          await SplashScreen.hideAsync();
-        }, 2000);
-      } catch (e) {
-        console.warn(e);
+  const fetchBooks = async () => {
+    try {
+      setLoading(true);
+      setGroupedBooks([]);
+      setErrorMsg(null);
+
+      const response = await fetch(
+        `https://www.googleapis.com/books/v1/volumes?q=subject:${category}&printType=books&maxResults=20`
+      );
+
+      if (!response.ok) {
+        throw new Error('Error al conectarse a Google Books.');
       }
-    };
 
-    prepararApp();
-  }, []);
+      const data = await response.json();
 
-  const showAlert = () => {
-    if (name.trim() === '' || email.trim() === '') {
-      Alert.alert('Por favor, completa todos los campos requeridos');
-    } else if (!aceptaTerminos) {
-      Alert.alert('Debes aceptar los términos y condiciones');
-    } else {
-      Alert.alert('Registro exitoso', `Nombre: ${name}\nCorreo electrónico: ${email}`);
+      if (!data.items || data.items.length === 0) {
+        throw new Error('No se encontraron libros para esta categoría.');
+      }
+
+      const authorGroups = {};
+
+      data.items.forEach(item => {
+        const volume = item.volumeInfo;
+        const authors = volume.authors || ['Autor desconocido'];
+        authors.forEach(author => {
+          if (!authorGroups[author]) authorGroups[author] = [];
+          authorGroups[author].push({
+            id: item.id,
+            title: volume.title,
+            description: volume.description || 'Sin descripción',
+            image: volume.imageLinks?.thumbnail,
+            publisher: volume.publisher || 'Editorial desconocida',
+            publishedDate: volume.publishedDate || 'Fecha desconocida',
+            pageCount: volume.pageCount || 'Desconocido',
+            categories: volume.categories || [],
+            language: volume.language,
+            previewLink: volume.previewLink || null,
+          });
+        });
+      });
+
+      const sections = Object.keys(authorGroups).map(author => ({
+        title: author,
+        data: authorGroups[author],
+      }));
+
+      setGroupedBooks(sections);
+    } catch (err) {
+      Alert.alert('Error', err.message);
+      setErrorMsg(err.message);
+      setGroupedBooks([]);
+    } finally {
+      setLoading(false);
     }
   };
 
+  useEffect(() => {
+    fetchBooks();
+  }, [category]);
+
+  const categoryList = Object.entries(CATEGORIES);
+
+  const openBookModal = book => {
+    setSelectedBook(book);
+    setModalVisible(true);
+  };
+
+  const closeBookModal = () => {
+    setSelectedBook(null);
+    setModalVisible(false);
+  };
+
   return (
-    <ImageBackground
-      source={require('./assets/fondo_2.png')}
-      style={styles.background}
-      resizeMode="cover"
-    >
-      <ScrollView contentContainerStyle={styles.container}>
-        <Text style={styles.title}>Nombre</Text>
-        <TextInput
-          style={styles.input}
-          placeholder="Ingresa tu nombre"
-          value={name}
-          onChangeText={setName}
+    <SafeAreaView style={styles.container}>
+      <Text style={styles.header}>Lista de libros</Text>
+
+      <Pressable style={styles.selector} onPress={() => setCategoryModalVisible(true)}>
+        <Text style={styles.selectorText}>{CATEGORIES[category]}</Text>
+      </Pressable>
+
+      <Modal
+        visible={categoryModalVisible}
+        transparent={true}
+        animationType="slide"
+        onRequestClose={() => setCategoryModalVisible(false)}
+      >
+        <View style={styles.modalContainer}>
+          <View style={styles.modalBox}>
+            <Text style={styles.modalTitle}>Selecciona una categoría</Text>
+            <FlatList
+              data={categoryList}
+              keyExtractor={([key]) => key}
+              renderItem={({ item: [key, label] }) => (
+                <Pressable
+                  style={styles.modalOption}
+                  onPress={() => {
+                    setCategory(key);
+                    setCategoryModalVisible(false);
+                  }}
+                >
+                  <Text style={styles.modalText}>{label}</Text>
+                </Pressable>
+              )}
+            />
+          </View>
+        </View>
+      </Modal>
+
+      {loading ? (
+        <ActivityIndicator size="large" color="#007AFF" style={{ marginTop: 20 }} />
+      ) : errorMsg ? (
+        <Text style={styles.error}>{errorMsg}</Text>
+      ) : groupedBooks.length === 0 ? (
+        <Text style={styles.error}>No se encontraron libros.</Text>
+      ) : (
+        <SectionList
+          sections={groupedBooks}
+          keyExtractor={(item, index) => item.id || item.title + index}
+          renderSectionHeader={({ section: { title } }) => (
+            <Text style={styles.author}>{title}</Text>
+          )}
+          renderItem={({ item }) => (
+            <TouchableOpacity onPress={() => openBookModal(item)} style={styles.card}>
+              {item.image && <Image source={{ uri: item.image }} style={styles.image} />}
+              <Text style={styles.title}>{item.title}</Text>
+              <Text style={styles.publisher}>📘 {item.publisher}</Text>
+              <Text numberOfLines={3} style={styles.description}>
+                {item.description}
+              </Text>
+            </TouchableOpacity>
+          )}
         />
+      )}
 
-        <Text style={styles.title}>Correo electrónico</Text>
-        <TextInput
-          style={styles.input}
-          placeholder="Ingresa tu correo electrónico"
-          value={email}
-          onChangeText={setEmail}
-          keyboardType="email-address"
-        />
-
-        <Interruptor acepta={aceptaTerminos} setAcepta={setAceptaTerminos} />
-
-        <Text style={styles.title}>Campo solo lectura</Text>
-        <TextInput
-          style={styles.input}
-          value="Este campo no se puede editar"
-          editable={false}
-        />
-
-        <Button title="Mostrar alerta" onPress={showAlert} />
-      </ScrollView>
-    </ImageBackground>
+      <Modal
+        visible={modalVisible}
+        animationType="slide"
+        transparent={true}
+        onRequestClose={closeBookModal}
+      >
+        <View style={styles.detailModalContainer}>
+          <View style={styles.detailModalBox}>
+            <ScrollView>
+              <Pressable style={styles.closeButton} onPress={closeBookModal}>
+                <Text style={styles.closeButtonText}>Cerrar ✕</Text>
+              </Pressable>
+              {selectedBook && (
+                <>
+                  {selectedBook.image && (
+                    <Image source={{ uri: selectedBook.image }} style={styles.detailImage} />
+                  )}
+                  <Text style={styles.detailTitle}>{selectedBook.title}</Text>
+                  <Text style={styles.detailPublisher}>
+                    Editorial: {selectedBook.publisher}
+                  </Text>
+                  <Text style={styles.detailInfo}>
+                    Páginas: {selectedBook.pageCount} | Publicado: {selectedBook.publishedDate}
+                  </Text>
+                  <Text style={styles.detailDescription}>{selectedBook.description}</Text>
+                </>
+              )}
+            </ScrollView>
+          </View>
+        </View>
+      </Modal>
+    </SafeAreaView>
   );
 }
 
-// Estilos
 const styles = StyleSheet.create({
-  background: {
-    flex: 1,
-    width: '100%',
-    height: '100%',
-  },
   container: {
-    flexGrow: 1,
-    padding: 20,
-    backgroundColor: 'rgba(0,0,0,0.5)',
+    flex: 1,
+    backgroundColor: '#fefefe',
+    paddingTop: 40,
+    paddingHorizontal: 10,
+  },
+  header: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    marginBottom: 10,
+    textAlign: 'center',
+  },
+  selector: {
+    backgroundColor: '#ddd',
+    padding: 12,
+    borderRadius: 8,
+    marginBottom: 10,
     alignItems: 'center',
+  },
+  selectorText: {
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  modalContainer: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.3)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalBox: {
+    backgroundColor: '#fff',
+    borderRadius: 10,
+    padding: 20,
+    width: '80%',
+    maxHeight: '60%',
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 10,
+    textAlign: 'center',
+  },
+  modalOption: {
+    paddingVertical: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: '#eee',
+  },
+  modalText: {
+    fontSize: 16,
+    textAlign: 'center',
+  },
+  author: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    backgroundColor: '#eee',
+    padding: 5,
+  },
+  card: {
+    backgroundColor: '#fff',
+    marginVertical: 5,
+    padding: 10,
+    borderRadius: 8,
+    elevation: 2,
+  },
+  image: {
+    height: 100,
+    width: 70,
+    alignSelf: 'center',
+    marginBottom: 5,
   },
   title: {
-    fontSize: 17,
-    color: '#333',
-    marginBottom: 6,
-    alignSelf: 'flex-start',
+    fontSize: 16,
+    fontWeight: 'bold',
   },
-  input: {
-    height: 40,
-    borderColor: '#bbb',
-    borderWidth: 1,
-    paddingHorizontal: 10,
-    marginBottom: 15,
-    borderRadius: 8,
-    backgroundColor: '#fff',
-    width: '100%',
-    fontSize: 15,
-  },
-  switchContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 15,
-  },
-  terminosText: {
-    marginLeft: 10,
+  publisher: {
     fontSize: 14,
-    color: '#fff',
+    color: 'gray',
+    marginBottom: 5,
   },
-  subtitle: {
-    color: 'white',
+  description: {
+    fontSize: 14,
+  },
+  error: {
+    textAlign: 'center',
+    marginTop: 20,
+    color: 'red',
+    fontSize: 16,
+  },
+  detailModalContainer: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.7)',
+    justifyContent: 'center',
+    padding: 20,
+  },
+  detailModalBox: {
+    backgroundColor: '#fff',
+    borderRadius: 10,
+    padding: 20,
+    maxHeight: '90%',
+  },
+  closeButton: {
+    alignSelf: 'flex-end',
+    marginBottom: 10,
+  },
+  closeButtonText: {
     fontSize: 18,
+    fontWeight: 'bold',
+  },
+  detailImage: {
+    width: '100%',
+    height: 250,
+    resizeMode: 'contain',
+    marginBottom: 10,
+  },
+  detailTitle: {
+    fontSize: 22,
+    fontWeight: 'bold',
+    marginBottom: 10,
+  },
+  detailPublisher: {
+    fontSize: 16,
+    marginBottom: 5,
+  },
+  detailInfo: {
+    fontSize: 14,
+    marginBottom: 15,
+    color: 'gray',
+  },
+  detailDescription: {
+    fontSize: 16,
   },
 });
