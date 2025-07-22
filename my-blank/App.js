@@ -1,100 +1,169 @@
-import React, { useEffect, useState } from "react";
-import {  SafeAreaView,
-  View,
-  Text,
-  FlatList,
-  SectionList,
+import React, { useState } from "react";
+import {
   StyleSheet,
-  ActivityIndicator,
+  Text,
+  View,
+  Button,
+  Modal,
+  TextInput,
+  TouchableOpacity,
 } from "react-native";
 
-export default function App() {
-  const [frutas, setFrutas] = useState([]);
-  const [verduras, setVerduras] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const API_URL = "http://10.16.33.132:8000/productos/"; // Cambia esto según tu API
 
-  useEffect(() => {
-    fetch(API_URL)
-      .then((res) => res.json())
-      .then((data) => {
-        setFrutas(data.frutas);
-        setVerduras(data.verduras);
-      })
-      .catch((error) => console.error(error))
-      .finally(() => setLoading(false));
-  }, []);
 
-  // Render item para FlatList y SectionList
-  const renderItem = ({ item }) => (
-    <View style={styles.item}>
-      <Text style={styles.nombre}>{item.nombre}</Text>
+
+const ModalPersonalizado = ({ visible, onClose, children }) => (
+  <Modal
+    visible={visible}
+    transparent={true}
+    animationType="fade"
+    onRequestClose={onClose}
+  >
+    <View style={styles.modalBackground}>
+      <View style={styles.modalBox}>
+        {children}
+        <TouchableOpacity style={styles.closeButton} onPress={onClose}>
+          <Text style={styles.buttonText}>CERRAR</Text>
+        </TouchableOpacity>
+      </View>
     </View>
-  );
+  </Modal>
+);
 
-  // Para SectionList, definimos las secciones
-  const sections = [
-    { title: "Frutas", data: frutas },
-    { title: "Verduras", data: verduras },
-  ];
 
-  if (loading) {
-    return (
-      <SafeAreaView style={styles.container}>
-        <ActivityIndicator size="large" color="#0000ff" />
-        <Text>Cargando datos...</Text>
-      </SafeAreaView>
-    );
-  }
+
+
+
+
+
+export default function App() {
+  const [modalVisible, setModalVisible] = useState(false);
+  const [inputValue, setInputValue] = useState("");
+  const [mostrarTexto, setMostrarTexto] = useState("");
+
+  const handleMostrar = () => {
+    setMostrarTexto(inputValue);
+  };
 
   return (
-    <SafeAreaView style={styles.container}>
-      <Text style={styles.title}>Lista de Frutas (FlatList)</Text>
-      <FlatList
-        data={frutas}
-        keyExtractor={(item) => item.id.toString()}
-        renderItem={renderItem}
-      />
+    <View style={styles.container}>
+      <TouchableOpacity
+        style={styles.openButton}
+        onPress={() => setModalVisible(true)}
+      >
+        <Text style={styles.buttonText}>MOSTRAR MODAL</Text>
+      </TouchableOpacity>
 
-      <Text style={styles.title}>Frutas y Verduras (SectionList)</Text>
-      <SectionList
-        sections={sections}
-        keyExtractor={(item) => item.id.toString()}
-        renderItem={renderItem}
-        renderSectionHeader={({ section: { title } }) => (
-          <Text style={styles.header}>{title}</Text>
+      <ModalPersonalizado
+        visible={modalVisible}
+        onClose={() => setModalVisible(false)}
+      >
+        <Text style={styles.modalText}>¡Este es un modal estructurado!</Text>
+        <TextInput
+          style={styles.input}
+          placeholder="Escribe algo aquí..."
+          placeholderTextColor="#aaa"
+          value={inputValue}
+          onChangeText={setInputValue}
+        />
+        <TouchableOpacity style={styles.showButton} onPress={handleMostrar}>
+          <Text style={styles.buttonText}>MOSTRAR</Text>
+        </TouchableOpacity>
+        {mostrarTexto !== "" && (
+          <Text style={styles.resultado}>
+            Lo escrito:{" "}
+            <Text style={styles.resultadoTexto}>{mostrarTexto}</Text>
+          </Text>
         )}
-      />
-    </SafeAreaView>
+      </ModalPersonalizado>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    marginTop: 30,
-    paddingHorizontal: 16,
+    backgroundColor: "#f4f4f4",
+    alignItems: "center",
+    justifyContent: "center",
   },
-  title: {
+  openButton: {
+    backgroundColor: "#2196F3",
+    paddingVertical: 14,
+    paddingHorizontal: 32,
+    borderRadius: 8,
+    marginBottom: 10,
+    elevation: 2,
+  },
+  modalBackground: {
+    flex: 1,
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  modalBox: {
+    backgroundColor: "white",
+    padding: 28,
+    borderRadius: 18,
+    width: 320,
+    alignItems: "center",
+    elevation: 8,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+  },
+  modalText: {
     fontSize: 22,
+    marginBottom: 18,
+    textAlign: "center",
     fontWeight: "bold",
-    marginVertical: 12,
+    color: "#222",
   },
-  header: {
-    fontSize: 20,
-    fontWeight: "bold",
-    backgroundColor: "#ddd",
-    paddingVertical: 4,
-    paddingHorizontal: 10,
-    marginTop: 10,
-  },
-  item: {
-    backgroundColor: "#f9c2ff",
+  input: {
+    width: "100%",
+    borderColor: "#2196F3",
+    borderWidth: 1.5,
+    borderRadius: 10,
     padding: 10,
-    marginVertical: 4,
-    borderRadius: 5,
+    marginBottom: 16,
+    fontSize: 17,
+    backgroundColor: "#f9f9f9",
+    color: "#222",
   },
-  nombre: {
-    fontSize: 18,
+  showButton: {
+    backgroundColor: "#4CAF50",
+    paddingVertical: 12,
+    paddingHorizontal: 30,
+    borderRadius: 8,
+    marginBottom: 14,
+    elevation: 2,
+  },
+  closeButton: {
+    backgroundColor: "#FF5252",
+    paddingVertical: 12,
+    paddingHorizontal: 30,
+    borderRadius: 8,
+    marginTop: 8,
+    elevation: 2,
+  },
+  buttonText: {
+    color: "white",
+    fontWeight: "bold",
+    fontSize: 16,
+    textAlign: "center",
+    letterSpacing: 1,
+  },
+  resultado: {
+    marginTop: 10,
+    fontSize: 17,
+    color: "#333",
+    textAlign: "center",
+  },
+  resultadoTexto: {
+    color: "#2196F3",
+    fontWeight: "bold",
   },
 });
+
+
